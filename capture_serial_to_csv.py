@@ -9,7 +9,8 @@ BAUD_RATE = 115200
 
 # CSV file settings
 CSV_FILE = r"C:\nrf_connect_sdk\myprojects\sensor_data.csv"  # Adjust path as necessary
-CSV_HEADER = ['Timestamp', 'eCO2 (ppm)', 'eTVOC (ppb)', 'CO2 (ppm)', 'Temperature (°C)', 'Humidity (%)']
+CSV_HEADER = ['Timestamp', 'eCO2 (ppm)', 'eTVOC (ppb)', 'CO2 (ppm)', 'Temperature (°C)', 'Humidity (%)',
+              'pm1.0(µg/m³)','pm2.5(µg/m³)','pm4.0(µg/m³)','pm10.0(µg/m³)','nc0.5(#/cm³)','nc1.0(#/cm³)','nc2.5(#/cm³)','nc10.0(#/cm³)','typical size(µm)']
 
 def read_from_serial(port, baud_rate):
     """Reads data from the specified serial port."""
@@ -47,7 +48,17 @@ def main():
     CO2 = None
     temperature = None
     humidity = None
-    
+    pm1_0= None
+    pm2_5= None
+    pm4_0= None
+    pm10_0= None
+    nc0_5 = None
+    nc1_0 = None
+    nc2_5 = None
+    nc10_0 = None
+    typical_size = None
+   
+        
     try:
         while True:
             if ser.in_waiting > 0:
@@ -75,24 +86,80 @@ def main():
                         continue
                 elif line.startswith('Received temperature:'):
                     try:
-                        temperature = float(line.split('Received temperature: ')[1].split(' °C')[0])
+                        temperature = int(line.split('Received temperature: ')[1].split(' °C')[0])
                     except (ValueError, IndexError):
                         print("Error parsing temperature value")
                         continue
                 elif line.startswith('Received humidity:'):
                     try:
-                        humidity = float(line.split('Received humidity: ')[1].split(' percent RH')[0])
+                        humidity = int(line.split('Received humidity: ')[1].split(' percent RH')[0])
                     except (ValueError, IndexError):
                         print("Error parsing humidity value")
                         continue
-                
+                elif line.startswith('pm1.0:'):
+                    try:
+                        pm1_0 = float(line.split('pm1.0: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('pm2.5:'):
+                    try:
+                        pm2_5 = float(line.split('pm2.5: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('pm4.0:'):
+                    try:
+                        pm4_0 = float(line.split('pm4.0: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('pm10.0:'):
+                    try:
+                        pm10_0 = float(line.split('pm10.0: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('nc0.5:'):
+                    try:
+                        nc0_5 = float(line.split('nc0.5: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('nc1.0:'):
+                    try:
+                        nc1_0 = float(line.split('nc1.0: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('nc2.5:'):
+                    try:
+                        nc2_5 = float(line.split('nc2.5: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('nc10.0:'):
+                    try:
+                        nc10_0 = float(line.split('nc10.0: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+                elif line.startswith('typical size:'):
+                    try:
+                        typical_size = float(line.split('typical size: ')[1])
+                    except (ValueError, IndexError):
+                        print("Error parsing humidity value")
+                        continue
+
                 # Check if all values are received
-                if all(v is not None for v in [eCO2, eTVOC, CO2, temperature, humidity]):
+                if all(v is not None for v in [eCO2, eTVOC, CO2, temperature, humidity,
+                                                pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]):
                     # Get current timestamp
                     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     
                     # Write to CSV
-                    data_row = [timestamp, eCO2, eTVOC, CO2, temperature, humidity]
+                    data_row = [timestamp, eCO2, eTVOC, CO2, temperature, humidity, 
+                                pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]
                     write_to_csv(CSV_FILE, data_row)
                     
                     # Reset variables
@@ -101,6 +168,15 @@ def main():
                     CO2 = None
                     temperature = None
                     humidity = None
+                    pm1_0= None
+                    pm2_5= None
+                    pm4_0= None
+                    pm10_0 = None
+                    nc0_5= None
+                    nc1_0= None
+                    nc2_5 = None
+                    nc10_0= None
+                    typical_size = None
             
     except KeyboardInterrupt:
         print("Stopped by user")
