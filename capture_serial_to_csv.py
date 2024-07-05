@@ -9,8 +9,8 @@ BAUD_RATE = 115200
 
 # CSV file settings
 CSV_FILE = r"C:\nrf_connect_sdk\myprojects\sensor_data.csv"  # Adjust path as necessary
-CSV_HEADER = ['Timestamp', 'eCO2 (ppm)', 'eTVOC (ppb)', 'CO2 (ppm)', 'Temperature (°C)', 'Humidity (%)',
-              'pm1.0(µg/m³)','pm2.5(µg/m³)','pm4.0(µg/m³)','pm10.0(µg/m³)','nc0.5(#/cm³)','nc1.0(#/cm³)','nc2.5(#/cm³)','nc10.0(#/cm³)','typical size(µm)']
+CSV_HEADER = ['Timestamp', 'eCO2 (ppm)', 'eTVOC (ppb)', 'CO2 (ppm)', 'Temperature (C)', 'Humidity',
+              'pm1.0','pm2.5','pm4.0','pm10.0','nc0.5','nc1.0','nc2.5','nc10.0','typical size']
 
 def read_from_serial(port, baud_rate):
     """Reads data from the specified serial port."""
