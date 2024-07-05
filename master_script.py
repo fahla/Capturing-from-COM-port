@@ -3,49 +3,96 @@ import testread2 as upload
 import peak_hour_analysis as peak
 import time
 import os
+import params
 
 def capture_data(serial_port, baud_rate, csv_file):
     """Start capturing data from the serial port."""
-    capture.start_capture(serial_port, baud_rate, csv_file)
+    try:
+        capture.start_capture(serial_port, baud_rate, csv_file)
+    except Exception as e:
+        print(f"Error capturing data: {e}")
 
-def upload_data(csv_file, server, username, password, directory):
+def upload_data(file_name, server, username, password, directory):
     """Upload the CSV file to the FTP server."""
-    upload.upload_file_to_ftp(
-        filename=csv_file, 
-        server=server, 
-        username=username, 
-        password=password, 
-        directory=directory
-    )
+    try:
+        upload.upload_file_to_ftp(
+            filename=file_name, 
+            server=server, 
+            username=username, 
+            password=password, 
+            directory=directory
+        )
+    except Exception as e:
+        print(f"Error uploading file {file_name}: {e}")
 
 def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour):
     """Perform peak hour analysis."""
-    peak.peak_main(input_file, output_file, start_date, start_hour, end_date, end_hour)
+    try:
+        peak.peak_main(input_file, output_file, start_date, start_hour, end_date, end_hour)
+    except Exception as e:
+        print(f"Error analyzing peak hours: {e}")
+
+#SAMYAK
+def generate_hourly_data(input_file, output_file):
+    """Generate hourly data for the next 24 hours."""
+    # Placeholder for generating hourly data
+    pass
+
+#anyone with more than 2 braincells can pick
+def generate_daily_avg_data(input_file, output_file):
+    """Generate a CSV file for daily average data."""
+    # Placeholder for generating daily average data
+    pass
+
+#riya
+def conduct_peak_hour_temp_co2(input_file, output_file):
+    """Conduct peak hour analysis for temperature and CO2."""
+    # Placeholder for peak hour analysis for temperature and CO2
+    pass
+
+#anvita
+def generate_aqi_last_24_hours(input_file, output_file):
+    """Generate a CSV for AQI data over the last 24 hours."""
+    # Placeholder for generating AQI data for the last 24 hours
+    pass
 
 def main():
-    serial_port = '/dev/tty.usbmodem0010502577971'  # Adjust as necessary
-    baud_rate = 115200
-    csv_file = 'sensor_data.csv'
-    
-    # Start capturing serial data in a separate thread or process if needed
-    #capture_data(serial_port, baud_rate, csv_file)
-    
-    # Periodically upload the file to the server
-    i=1
-    while i<2:
-        #upload_data(csv_file=csv_file, server='ftp.gb.stackcp.com', username='ssns@cillyfox.com', password='#SSNS9167',  directory='' )
-        
-        # Perform peak hour analysis
-        analyze_peak_hours(
-            input_file=csv_file,
-            output_file='peak_hour_analysis.csv',
-            start_date='2024-07-03',
-            start_hour='00:00',
-            end_date='2024-07-05',
-            end_hour='23:59'
-        )
-        i=i+1 
-      #  time.sleep(3600)  # Wait for 1 hour before uploading again
+    while True:
+        try:
+            # Upload the sensor data CSV file
+            upload_data(params.CSV_FILE, **params.FTP_DETAILS)
+
+            # Perform and upload peak hour analysis
+            analyze_peak_hours(
+                input_file=params.CSV_FILE,
+                output_file=params.PEAK_HOUR_FILE,
+                start_date=params.START_DATE,
+                start_hour=params.START_HOUR,
+                end_date=params.END_DATE,
+                end_hour=params.END_HOUR
+            )
+            upload_data(params.PEAK_HOUR_FILE, **params.FTP_DETAILS)
+
+            # Generate and upload hourly data for the next 24 hours
+            # generate_hourly_data(params.CSV_FILE, 'hourly_data_last_next_24_hours.csv')
+            # upload_data('hourly_data_last_next_24_hours.csv', **params.FTP_DETAILS)
+
+            # Generate and upload daily average data
+            # generate_daily_avg_data(params.CSV_FILE, 'daily_avg_data.csv')
+            # upload_data('daily_avg_data.csv', **params.FTP_DETAILS)
+
+            # Conduct and upload peak hour analysis for temperature and CO2
+            # conduct_peak_hour_temp_co2(params.CSV_FILE, 'peak_hour_temp_co2.csv')
+            # upload_data('peak_hour_temp_co2.csv', **params.FTP_DETAILS)
+
+            # Generate and upload AQI data for the last 24 hours
+            # generate_aqi_last_24_hours(params.CSV_FILE, 'aqi_data_last_24_hours.csv')
+            # upload_data('aqi_data_last_24_hours.csv', **params.FTP_DETAILS)
+            
+            time.sleep(120)  # Wait for 120 secs before next upload
+        except Exception as e:
+            print(f"Error in main loop: {e}")
+            time.sleep(60)  # Wait for 1 minute before retrying
 
 if __name__ == "__main__":
     main()
