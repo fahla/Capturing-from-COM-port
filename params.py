@@ -1,7 +1,7 @@
 # Parameters for capturing data
-SERIAL_PORT = '/dev/tty.usbmodem0010502577971'  # Adjust as necessary
+SERIAL_PORT = 'COM12'  # Adjust as necessary
 BAUD_RATE = 115200
-CSV_FILE = 'sensor_data.csv'
+CSV_FILE = 'sensor_data.csv' # Adjust as necessary with complete path
 
 # Parameters for peak hour analysis
 START_DATE = '2024-07-03'
