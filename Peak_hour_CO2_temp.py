@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -77,13 +75,26 @@ fig_temp.update_layout(
     hovermode='x unified'
 )
 
+# Create a new DataFrame for peak values
+peak_values = pd.DataFrame({
+    'Metric': ['CO2', 'Temperature'],
+    'Value': [peak_co2['CO2 (ppm)'], peak_temp['Temperature (°C)']],
+    'Timestamp': [peak_co2['Timestamp'], peak_temp['Timestamp']]
+})
+
+# Save the peak values to a CSV file
+output_file_path = 'C:/sensor/peak_values.csv'
+peak_values.to_csv(output_file_path, index=False)
+
 # Show the plots
 fig_co2.show()
 fig_temp.show()
 
+# Assuming top_peak_hours is a DataFrame with peak hour analysis results
+top_peak_hours = peak_values  # Replace this with your actual peak hour analysis DataFrame
 
-# In[ ]:
+# Define the output CSV file path for the peak hour analysis results
+output_csv_file = 'C:/sensor/top_peak_hours.csv'
 
-
-
-
+# Save the peak hour analysis results to a CSV file
+top_peak_hours.to_csv(output_csv_file, index=False)
