@@ -4,6 +4,7 @@ import peak_hour_analysis as peak
 import time
 import os
 import params
+import aqi_each_hour as aqi_hour
 
 def capture_data(serial_port, baud_rate, csv_file):
     """Start capturing data from the serial port."""
@@ -53,8 +54,11 @@ def conduct_peak_hour_temp_co2(input_file, output_file):
 #anvita
 def generate_aqi_last_24_hours(input_file, output_file):
     """Generate a CSV for AQI data over the last 24 hours."""
-    # Placeholder for generating AQI data for the last 24 hours
-    pass
+    try:
+        aqi_hour.aqi_each_hour_main(input_file, output_file)
+    except Exception as e:
+        print(f"Error in finding AQI for past hours: {e}")
+        
 
 def main():
     while True:
