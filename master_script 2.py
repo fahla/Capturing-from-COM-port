@@ -5,6 +5,9 @@ import time
 import os
 import params
 import aqi_each_hour as aqi_hour
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from prophet import Prophet
 import Prediction_Model as pred
 
 def capture_data(SERIAL_PORT, BAUD_RATE, CSV_FILE):
@@ -37,11 +40,6 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
         print(f"Error analyzing peak hours: {e}")
 
 #SAMYAK
-def generate_hourly_data(input_file, output_file):
-    """Generate hourly data for the next 24 hours."""
-    # Placeholder for generating hourly data
-    pass
-
 def generate_prediction_data(input_file, output_file):
     """Prophet Model"""
     try:
@@ -49,7 +47,7 @@ def generate_prediction_data(input_file, output_file):
         
     except Exception as e:
         print(f"Error in Model Prediction")
-        
+
 #anyone with more than 2 braincells can pick
 def generate_daily_avg_data(input_file, output_file):
     """Generate a CSV file for daily average data."""
@@ -75,7 +73,7 @@ def main():
     while True:
         try:
             #Capture the data 
-            #capture.start_capture(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
+         #   capture.start_capture(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
             
             # Upload the sensor data CSV file
             upload_data(params.CSV_FILE, **params.FTP_DETAILS)
@@ -90,7 +88,7 @@ def main():
                 end_hour=params.END_HOUR
             )
             upload_data(params.PEAK_HOUR_FILE, **params.FTP_DETAILS)
-            generate_prediction_data(params.PEAK_HOUR_FILE,params.PRED_FILE)
+            generate_prediction_data()
             # Generate and upload hourly data for the next 24 hours
             # generate_hourly_data(params.CSV_FILE, 'hourly_data_last_next_24_hours.csv')
             # upload_data('hourly_data_last_next_24_hours.csv', **params.FTP_DETAILS)
@@ -107,7 +105,7 @@ def main():
             # generate_aqi_last_24_hours(params.CSV_FILE, 'aqi_data_last_24_hours.csv')
             # upload_data('aqi_data_last_24_hours.csv', **params.FTP_DETAILS)
             
-            time.sleep(10)  # Wait for 120 secs before next upload
+            time.sleep(120)  # Wait for 120 secs before next upload
         except Exception as e:
             print(f"Error in main loop: {e}")
             time.sleep(60)  # Wait for 1 minute before retrying
