@@ -79,10 +79,10 @@ def generate_aqi_last_24_hours(input_file, output_file):
         
 
 def main():
+    capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
     while True:
         try:
             # Capture the data 
-            capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
             
             # Upload the sensor data CSV file
             upload_data(params.CSV_FILE, **params.FTP_DETAILS)
