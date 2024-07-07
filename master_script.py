@@ -15,7 +15,7 @@ def read_from_serial(port, baud_rate):
 
 def capture_data(SERIAL_PORT, BAUD_RATE, CSV_FILE):
     """Start capturing data from the serial port."""
-    ser = read_from_serial(params.SERIAL_PORT, params.BAUD_RATE)
+    ser = read_from_serial(SERIAL_PORT, BAUD_RATE)
     try:
         capture.start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser)
     except Exception as e:
