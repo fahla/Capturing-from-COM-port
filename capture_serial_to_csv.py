@@ -6,10 +6,6 @@ import os
 CSV_HEADER = ['Timestamp', 'eCO2', 'eTVOC', 'CO2', 'Temperature', 'Humidity',
               'pm1.0', 'pm2.5', 'pm4.0', 'pm10.0', 'nc0.5', 'nc1.0', 'nc2.5', 'nc10.0', 'typical size']
 
-def read_from_serial(port, baud_rate):
-    ser = serial.Serial(port, baud_rate)
-    ser.flushInput()
-    return ser
 
 def write_to_csv(file_name, data):
     try:
@@ -20,8 +16,8 @@ def write_to_csv(file_name, data):
     except IOError as e:
         print(f"Error writing to CSV file: {e}")
 
-def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE):
-    ser = read_from_serial(SERIAL_PORT, BAUD_RATE)
+def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
+    #ser = read_from_serial(SERIAL_PORT, BAUD_RATE)
     print(f"Listening on {SERIAL_PORT} at {BAUD_RATE} baud rate.")
     
     # Check if CSV file exists, create it if it doesn't
@@ -34,13 +30,27 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE):
             print(f"Error creating CSV file: {e}")
             return  # Exit function if file creation fails
     
-    eCO2, eTVOC, CO2, temperature, humidity, pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size = [None]*14
+    # Initialize variables for sensor values
+    eCO2 = None
+    eTVOC = None
+    CO2 = None
+    temperature = None
+    humidity = None
+    pm1_0= None
+    pm2_5= None
+    pm4_0= None
+    pm10_0= None
+    nc0_5 = None
+    nc1_0 = None
+    nc2_5 = None
+    nc10_0 = None
+    typical_size = None
     
     try:
         while True:
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8').strip()
-                print(f"Raw data: {line}")
+                print(f"Received: {line}")
                 
                 # parsing logic 
                 if line.startswith('Received eCO2 value:'):
@@ -129,7 +139,10 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE):
                         continue
 
                 
-                if all(v is not None for v in [eCO2, eTVOC, CO2, temperature, humidity,pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]):
+                # Check if all values are received
+                if all(v is not None for v in [eCO2, eTVOC, CO2, temperature, humidity,
+                                                pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]):
+                    
                      # Get current timestamp
                     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     # Write to CSV
@@ -137,7 +150,21 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE):
                                 pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]
                     write_to_csv(CSV_FILE, data_row)
                     
-                    eCO2, eTVOC, CO2, temperature, humidity, pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size = [None]*14
+                    # Initialize variables for sensor values
+                    eCO2 = None
+                    eTVOC = None
+                    CO2 = None
+                    temperature = None
+                    humidity = None
+                    pm1_0= None
+                    pm2_5= None
+                    pm4_0= None
+                    pm10_0= None
+                    nc0_5 = None
+                    nc1_0 = None
+                    nc2_5 = None
+                    nc10_0 = None
+                    typical_size = None
     
     except KeyboardInterrupt:
         print("Stopped by user")
