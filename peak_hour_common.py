@@ -52,10 +52,10 @@ def calculate_aqi(data):
 def peak_hour_analysis(data):
     data['hour'] = data['Timestamp'].dt.floor('h')
     hourly_data = data.groupby('hour').mean().reset_index()
-    
+
     # Round off all values to 2 decimal places
     hourly_data = hourly_data.round(2)
-    
+
     max_aqi_pm25 = hourly_data['AQI_PM2.5'].max()
     max_aqi_pm10 = hourly_data['AQI_PM10'].max()
     max_temp = hourly_data['Temperature (C)'].max()
@@ -65,29 +65,44 @@ def peak_hour_analysis(data):
     hourly_data['Peak_Hour_AQI_PM10'] = (hourly_data['AQI_PM10'] == max_aqi_pm10).astype(int)
     hourly_data['Peak_Hour_Temperature'] = (hourly_data['Temperature (C)'] == max_temp).astype(int)
     hourly_data['Peak_Hour_CO2'] = (hourly_data['CO2 (ppm)'] == max_co2).astype(int)
-    
+
     # Rename 'hour' back to 'Timestamp' for output consistency
     hourly_data.rename(columns={'hour': 'Timestamp'}, inplace=True)
-    
+
     return hourly_data[['Timestamp', 'AQI_PM2.5', 'AQI_PM10', 'Temperature (C)', 'CO2 (ppm)',
                         'Peak_Hour_AQI_PM2.5', 'Peak_Hour_AQI_PM10', 'Peak_Hour_Temperature', 'Peak_Hour_CO2']]
+
+def interpolate_missing_hours(df):
+    df.set_index('Timestamp', inplace=True)
+    df = df.resample('H').asfreq()
+    df = df.interpolate(method='linear')
+    df = df.round(2)
+    df = df.reset_index()
+    return df
 
 def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour):
     """Perform peak hour analysis."""
     try:
         data = read_sensor_data(input_file)
-        
+
         # Filter the data based on the provided date and hour range
         start_datetime = pd.to_datetime(f"{start_date} {start_hour}")
         end_datetime = pd.to_datetime(f"{end_date} {end_hour}")
         data = data[(data['Timestamp'] >= start_datetime) & (data['Timestamp'] <= end_datetime)]
-        
+
         # Calculate AQI for the filtered data
         data = calculate_aqi(data)
-        
+
         # Perform peak hour analysis
         peak_hour_data = peak_hour_analysis(data)
-        
+
+        # Drop duplicate 'Timestamp' column if exists
+        if 'Timestamp' in peak_hour_data.columns:
+            peak_hour_data = peak_hour_data.loc[:,~peak_hour_data.columns.duplicated()]
+
+        # Interpolate missing hours
+        peak_hour_data = interpolate_missing_hours(peak_hour_data)
+
         # Save the peak hour analysis results to a CSV file
         peak_hour_data.to_csv(output_file, index=False)
     except Exception as e:
@@ -95,8 +110,8 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
 
 # Example usage (if needed for standalone testing)
 if __name__ == "__main__":
-    input_file = '/mnt/data/sensor_data.csv'  # Update this path as needed
-    output_file = '/mnt/data/peak_hour_data.csv'  # Update this path as needed
+    input_file = 'sensor_data.csv'  # Update this path as needed
+    output_file = 'peak_hour_data.csv'  # Update this path as needed
     start_date = '2024-07-01'
     start_hour = '00:00'
     end_date = '2024-07-02'
