@@ -6,10 +6,10 @@ import os
 import params
 import aqi_each_hour as aqi_hour
 
-def capture_data(serial_port, baud_rate, csv_file):
+def capture_data(SERIAL_PORT, BAUD_RATE, CSV_FILE):
     """Start capturing data from the serial port."""
     try:
-        capture.start_capture(serial_port, baud_rate, csv_file)
+        capture.start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE)
     except Exception as e:
         print(f"Error capturing data: {e}")
 
@@ -63,6 +63,9 @@ def generate_aqi_last_24_hours(input_file, output_file):
 def main():
     while True:
         try:
+            #Capture the data 
+            capture.start_capture(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
+            
             # Upload the sensor data CSV file
             upload_data(params.CSV_FILE, **params.FTP_DETAILS)
 
