@@ -1,6 +1,6 @@
 import capture_serial_to_csv as capture
 import testread2 as upload
-import peak_hour_analysis as peak
+import peak_hour_common as peak
 import time
 import os
 import params
@@ -29,7 +29,9 @@ def upload_data(file_name, server, username, password, directory):
 def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour):
     """Perform peak hour analysis."""
     try:
-        peak.peak_main(input_file, output_file, start_date, start_hour, end_date, end_hour)
+       peak.analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour)
+       #peak.peak_main(input_file, output_file, start_date, start_hour, end_date, end_hour)
+
     except Exception as e:
         print(f"Error analyzing peak hours: {e}")
 
@@ -64,7 +66,7 @@ def main():
     while True:
         try:
             #Capture the data 
-            capture.start_capture(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
+         #   capture.start_capture(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
             
             # Upload the sensor data CSV file
             upload_data(params.CSV_FILE, **params.FTP_DETAILS)
