@@ -55,7 +55,7 @@ def generate_prediction_data(input_file, output_file):
         pred.main_function(input_file,output_file)
         
     except Exception as e:
-        print(f"Error in Model Prediction")
+        print(f"Error in Model Prediction:{e}")
         
 #anyone with more than 2 braincells can pick
 def generate_daily_avg_data(input_file, output_file):
@@ -81,7 +81,7 @@ def generate_aqi_last_24_hours(input_file, output_file):
 def main():
     while True:
         try:
-            #Capture the data 
+            # Capture the data 
             capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
             
             # Upload the sensor data CSV file
@@ -96,8 +96,8 @@ def main():
                 end_date=params.END_DATE,
                 end_hour=params.END_HOUR
             )
-            upload_data(params.PEAK_HOUR_FILE, **params.FTP_DETAILS)
-          #  generate_prediction_data(params.PEAK_HOUR_FILE,params.PRED_FILE)
+            # upload_data(params.PEAK_HOUR_FILE, **params.FTP_DETAILS)
+            generate_prediction_data(input_file=params.CSV_FILE,output_file=params.PRED_FILE)
             # Generate and upload hourly data for the next 24 hours
             # generate_hourly_data(params.CSV_FILE, 'hourly_data_last_next_24_hours.csv')
             # upload_data('hourly_data_last_next_24_hours.csv', **params.FTP_DETAILS)

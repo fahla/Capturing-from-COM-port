@@ -49,8 +49,7 @@ def main_function(input_file, output_file):
     
     # Generate textual summary
     summary = predicted_hourly_aqi.to_dict()
-    print("Predicted AQI by Hour of the Day:")
-    
+        
     # Identify the hour with the highest AQI value
     worst_hour = predicted_hourly_aqi.idxmax()
     worst_aqi = predicted_hourly_aqi.max()    
