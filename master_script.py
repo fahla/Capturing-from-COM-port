@@ -6,6 +6,7 @@ import os
 import params
 import aqi_each_hour as aqi_hour
 import Prediction_Model as pred
+import serial
 
 def read_from_serial(port, baud_rate):
     ser = serial.Serial(port, baud_rate)
