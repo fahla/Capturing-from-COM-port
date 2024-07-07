@@ -97,7 +97,7 @@ def main():
                 end_hour=params.END_HOUR
             )
             upload_data(params.PEAK_HOUR_FILE, **params.FTP_DETAILS)
-            generate_prediction_data(params.PEAK_HOUR_FILE,params.PRED_FILE)
+          #  generate_prediction_data(params.PEAK_HOUR_FILE,params.PRED_FILE)
             # Generate and upload hourly data for the next 24 hours
             # generate_hourly_data(params.CSV_FILE, 'hourly_data_last_next_24_hours.csv')
             # upload_data('hourly_data_last_next_24_hours.csv', **params.FTP_DETAILS)
