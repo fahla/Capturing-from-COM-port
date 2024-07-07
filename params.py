@@ -1,7 +1,7 @@
 # Parameters for capturing data
 SERIAL_PORT = 'COM12'  # Adjust as necessary
 BAUD_RATE = 115200
-CSV_FILE = 'sensor_data.csv' 
+CSV_FILE = r'sensor_data.csv' 
 
 # Parameters for peak hour analysis
 START_DATE = '2024-07-03'

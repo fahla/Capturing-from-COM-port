@@ -20,20 +20,21 @@ def write_to_csv(file_name, data):
     except IOError as e:
         print(f"Error writing to CSV file: {e}")
 
-def start_capture(serial_port, baud_rate, csv_file):
-    ser = read_from_serial(serial_port, baud_rate)
-    print(f"Listening on {serial_port} at {baud_rate} baud rate.")
+def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE):
+    ser = read_from_serial(SERIAL_PORT, BAUD_RATE)
+    print(f"Listening on {SERIAL_PORT} at {BAUD_RATE} baud rate.")
     
-    if not os.path.exists(csv_file):
+    # Check if CSV file exists, create it if it doesn't
+    if not os.path.exists(CSV_FILE):
         try:
-            with open(csv_file, mode='w', newline='') as file:
+            with open(CSV_FILE, mode='w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(CSV_HEADER)
         except IOError as e:
             print(f"Error creating CSV file: {e}")
-            return
+            return  # Exit function if file creation fails
     
-    eCO2, eTVOC, CO2, temperature, humidity, pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size = [None]*15
+    eCO2, eTVOC, CO2, temperature, humidity, pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size = [None]*14
     
     try:
         while True:
@@ -129,12 +130,14 @@ def start_capture(serial_port, baud_rate, csv_file):
 
                 
                 if all(v is not None for v in [eCO2, eTVOC, CO2, temperature, humidity,pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]):
+                     # Get current timestamp
                     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    # Write to CSV
                     data_row = [timestamp, eCO2, eTVOC, CO2, temperature, humidity, 
                                 pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]
-                    write_to_csv(csv_file, data_row)
+                    write_to_csv(CSV_FILE, data_row)
                     
-                    eCO2, eTVOC, CO2, temperature, humidity, pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size = [None]*15
+                    eCO2, eTVOC, CO2, temperature, humidity, pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size = [None]*14
     
     except KeyboardInterrupt:
         print("Stopped by user")
