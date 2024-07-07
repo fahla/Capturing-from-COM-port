@@ -3,7 +3,7 @@ import csv
 from datetime import datetime
 import os
 
-CSV_HEADER = ['Timestamp', 'eCO2 (ppm)', 'eTVOC (ppb)', 'CO2 (ppm)', 'Temperature (C)', 'Humidity',
+CSV_HEADER = ['Timestamp', 'eCO2', 'eTVOC', 'CO2', 'Temperature', 'Humidity',
               'pm1.0', 'pm2.5', 'pm4.0', 'pm10.0', 'nc0.5', 'nc1.0', 'nc2.5', 'nc10.0', 'typical size']
 
 def read_from_serial(port, baud_rate):
