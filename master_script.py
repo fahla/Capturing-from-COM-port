@@ -7,10 +7,16 @@ import params
 import aqi_each_hour as aqi_hour
 import Prediction_Model as pred
 
+def read_from_serial(port, baud_rate):
+    ser = serial.Serial(port, baud_rate)
+    ser.flushInput()
+    return ser
+
 def capture_data(SERIAL_PORT, BAUD_RATE, CSV_FILE):
     """Start capturing data from the serial port."""
+    ser = read_from_serial(params.SERIAL_PORT, params.BAUD_RATE)
     try:
-        capture.start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE)
+        capture.start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser)
     except Exception as e:
         print(f"Error capturing data: {e}")
 
@@ -75,7 +81,7 @@ def main():
     while True:
         try:
             #Capture the data 
-            #capture.start_capture(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
+            capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
             
             # Upload the sensor data CSV file
             upload_data(params.CSV_FILE, **params.FTP_DETAILS)
@@ -108,6 +114,8 @@ def main():
             # upload_data('aqi_data_last_24_hours.csv', **params.FTP_DETAILS)
             
             time.sleep(10)  # Wait for 120 secs before next upload
+        except serial.SerialException as e:
+            print(f"Serial exception in main loop: {e}")
         except Exception as e:
             print(f"Error in main loop: {e}")
             time.sleep(60)  # Wait for 1 minute before retrying
