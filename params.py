@@ -9,6 +9,7 @@ START_HOUR = '00:00'
 END_DATE = '2024-07-05'
 END_HOUR = '23:59'
 PEAK_HOUR_FILE = 'peak_hour_data.csv'
+PRED_FILE = 'pred_file.csv'
 
 # FTP details
 FTP_DETAILS = {
