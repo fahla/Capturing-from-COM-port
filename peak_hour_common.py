@@ -76,8 +76,20 @@ def interpolate_missing_hours(df):
     df.set_index('Timestamp', inplace=True)
     df = df.resample('H').asfreq()
     df = df.interpolate(method='linear')
-    df = df.round(2)
     df = df.reset_index()
+    df = df.round(2)
+    
+    # Ensure peak hour indicators are correct after interpolation
+    max_aqi_pm25 = df['AQI_PM2.5'].max()
+    max_aqi_pm10 = df['AQI_PM10'].max()
+    max_temp = df['Temperature (C)'].max()
+    max_co2 = df['CO2 (ppm)'].max()
+
+    df['Peak_Hour_AQI_PM2.5'] = (df['AQI_PM2.5'] == max_aqi_pm25).astype(int)
+    df['Peak_Hour_AQI_PM10'] = (df['AQI_PM10'] == max_aqi_pm10).astype(int)
+    df['Peak_Hour_Temperature'] = (df['Temperature (C)'] == max_temp).astype(int)
+    df['Peak_Hour_CO2'] = (df['CO2 (ppm)'] == max_co2).astype(int)
+
     return df
 
 def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour):
