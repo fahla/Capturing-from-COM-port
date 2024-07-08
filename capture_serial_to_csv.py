@@ -2,6 +2,11 @@ import serial
 import csv
 from datetime import datetime
 import os
+import time
+import params
+import testread2 as upload
+import subprocess
+
 
 CSV_HEADER = ['Timestamp', 'eCO2', 'eTVOC', 'CO2', 'Temperature', 'Humidity',
               'pm1.0', 'pm2.5', 'pm4.0', 'pm10.0', 'nc0.5', 'nc1.0', 'nc2.5', 'nc10.0', 'typical size']
@@ -45,6 +50,7 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
     nc2_5 = None
     nc10_0 = None
     typical_size = None
+
     
     try:
         while True:
@@ -150,6 +156,7 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
                                 pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]
                     write_to_csv(CSV_FILE, data_row)
                     
+
                     # Initialize variables for sensor values
                     eCO2 = None
                     eTVOC = None
@@ -165,7 +172,11 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
                     nc2_5 = None
                     nc10_0 = None
                     typical_size = None
-    
+
+                    
+                    time.sleep(10)
+                    subprocess.run(["python", "tester.py"])   
+                    break              
     except KeyboardInterrupt:
         print("Stopped by user")
     finally:

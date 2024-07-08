@@ -5,8 +5,9 @@ import time
 import os
 import params
 import aqi_each_hour as aqi_hour
-import Prediction_Model as pred
 import serial
+
+#import Prediction_Model as pred
 
 def read_from_serial(port, baud_rate):
     ser = serial.Serial(port, baud_rate)
@@ -17,7 +18,7 @@ def capture_data(SERIAL_PORT, BAUD_RATE, CSV_FILE):
     """Start capturing data from the serial port."""
     ser = read_from_serial(SERIAL_PORT, BAUD_RATE)
     try:
-        capture.start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser)
+        capture.start_capture(SERIAL_PORT,BAUD_RATE,CSV_FILE, ser)
     except Exception as e:
         print(f"Error capturing data: {e}")
 
@@ -38,7 +39,7 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
     """Perform peak hour analysis."""
     try:
        peak.analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour)
-       #peak.peak_main(input_file, output_file, start_date, start_hour, end_date, end_hour)
+       peak.peak_main(input_file, output_file, start_date, start_hour, end_date, end_hour)
 
     except Exception as e:
         print(f"Error analyzing peak hours: {e}")
@@ -55,7 +56,7 @@ def generate_prediction_data(input_file, output_file):
         pred.main_function(input_file,output_file)
         
     except Exception as e:
-        print(f"Error in Model Prediction:{e}")
+        print(f"Error in Model Prediction")
         
 #anyone with more than 2 braincells can pick
 def generate_daily_avg_data(input_file, output_file):
@@ -79,13 +80,13 @@ def generate_aqi_last_24_hours(input_file, output_file):
         
 
 def main():
-    capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
     while True:
         try:
-            # Capture the data 
+            #Capture the data 
+            capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
             
-            # Upload the sensor data CSV file
-            upload_data(params.CSV_FILE, **params.FTP_DETAILS)
+            #Upload the sensor data CSV file
+            #upload_data(params.CSV_FILE, **params.FTP_DETAILS)
 
             # Perform and upload peak hour analysis
             analyze_peak_hours(
@@ -96,27 +97,25 @@ def main():
                 end_date=params.END_DATE,
                 end_hour=params.END_HOUR
             )
-            # upload_data(params.PEAK_HOUR_FILE, **params.FTP_DETAILS)
-            generate_prediction_data(input_file=params.CSV_FILE,output_file=params.PRED_FILE)
+            #upload_data(params.PEAK_HOUR_FILE, **params.FTP_DETAILS)
+            #generate_prediction_data(params.PEAK_HOUR_FILE,params.PRED_FILE)
             # Generate and upload hourly data for the next 24 hours
-            # generate_hourly_data(params.CSV_FILE, 'hourly_data_last_next_24_hours.csv')
-            # upload_data('hourly_data_last_next_24_hours.csv', **params.FTP_DETAILS)
+            #generate_hourly_data(params.CSV_FILE, 'hourly_data_last_next_24_hours.csv')
+            #upload_data('hourly_data_last_next_24_hours.csv', **params.FTP_DETAILS)
 
             # Generate and upload daily average data
-            # generate_daily_avg_data(params.CSV_FILE, 'daily_avg_data.csv')
-            # upload_data('daily_avg_data.csv', **params.FTP_DETAILS)
+            #generate_daily_avg_data(params.CSV_FILE, 'daily_avg_data.csv')
+            #upload_data('daily_avg_data.csv', **params.FTP_DETAILS)
 
             # Conduct and upload peak hour analysis for temperature and CO2
             # conduct_peak_hour_temp_co2(params.CSV_FILE, 'peak_hour_temp_co2.csv')
-            # upload_data('peak_hour_temp_co2.csv', **params.FTP_DETAILS)
+            #upload_data('peak_hour_temp_co2.csv', **params.FTP_DETAILS)
 
             # Generate and upload AQI data for the last 24 hours
-            # generate_aqi_last_24_hours(params.CSV_FILE, 'aqi_data_last_24_hours.csv')
-            # upload_data('aqi_data_last_24_hours.csv', **params.FTP_DETAILS)
+            #generate_aqi_last_24_hours(params.CSV_FILE, 'aqi_data_last_24_hours.csv')
+            #upload_data('aqi_data_last_24_hours.csv', **params.FTP_DETAILS)
             
             time.sleep(10)  # Wait for 120 secs before next upload
-        except serial.SerialException as e:
-            print(f"Serial exception in main loop: {e}")
         except Exception as e:
             print(f"Error in main loop: {e}")
             time.sleep(60)  # Wait for 1 minute before retrying
