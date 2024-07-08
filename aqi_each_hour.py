@@ -1,18 +1,18 @@
-# In[1]:
+# In[10]:
 
 
 import pandas as pd
 import numpy as np
 
 
-# In[2]:
+# In[11]:
 
 
 def linear_interpolation(value, c_low, c_high, aqi_low, aqi_high):
-    return ((aqi_high - aqi_low) / (c_high - c_low)) * (value - c_low) + aqi_low
+    return round(((aqi_high - aqi_low) / (c_high - c_low)) * (value - c_low) + aqi_low)
 
 
-# In[3]:
+# In[12]:
 
 
 def calculate_aqi_pm25(pm25):
@@ -34,7 +34,7 @@ def calculate_aqi_pm25(pm25):
         return 500  # AQI value for concentrations above 500
 
 
-# In[4]:
+# In[13]:
 
 
 def calculate_aqi_pm10(pm10):
@@ -56,7 +56,7 @@ def calculate_aqi_pm10(pm10):
         return 500  # AQI value for concentrations above 604
 
 
-# In[5]:
+# In[14]:
 
 
 def read_sensor_data(csv_file):
@@ -64,7 +64,7 @@ def read_sensor_data(csv_file):
     return data
 
 
-# In[6]:
+# In[15]:
 
 
 def calculate_aqi(data):
@@ -74,7 +74,7 @@ def calculate_aqi(data):
     return data
 
 
-# In[7]:
+# In[16]:
 
 
 def interval_analysis(data, interval='5min'):
@@ -91,7 +91,7 @@ def interval_analysis(data, interval='5min'):
     return interval_data
 
 
-# In[8]:
+# In[20]:
 
 
 def aggregate_aqi_by_hour(interval_data):
@@ -109,10 +109,12 @@ def aggregate_aqi_by_hour(interval_data):
     hourly_aqi['date'] = hourly_aqi['date_hour'].dt.date
     hourly_aqi['hour'] = hourly_aqi['date_hour'].dt.hour
     hourly_aqi = hourly_aqi[['date', 'hour', 'overall_aqi_mean']]
+    # Round the overall AQI to the nearest integer
+    hourly_aqi['overall_aqi_mean'] = hourly_aqi['overall_aqi_mean'].round().astype(int)
     return hourly_aqi
 
 
-# In[13]:
+# In[21]:
 
 
 def aqi_each_hour_main(csv_file, output_csv_file):
@@ -127,12 +129,13 @@ def aqi_each_hour_main(csv_file, output_csv_file):
     print("Hourly AQI analysis completed. Results saved to", output_csv_file)
 
 
-# In[14]:
+# In[23]:
 
 
 # Example usage
 #csv_file = '/Users/hallo/Desktop/SSNS/project_data/sensor_data.csv'  # Replace with your actual file path
-#output_csv_file = '/Users/hallo/Desktop/SSNS/project_data/pleasee_aqi_analysis.csv'  # Replace with your desired output file path
+#output_csv_file = '/Users/hallo/Desktop/SSNS/project_data/aqi_hist.csv'  # Replace with your desired output file path
 
 #aqi_each_hour_main(csv_file, output_csv_file)
+
 
