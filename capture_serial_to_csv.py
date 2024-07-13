@@ -176,7 +176,7 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
                     
                     time.sleep(3)
                     subprocess.run(["python", "uploader.py"])   
-                    break              
+                                  
     except KeyboardInterrupt:
         print("Stopped by user")
     finally:
