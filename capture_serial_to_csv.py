@@ -174,7 +174,7 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
                     typical_size = None
 
                     
-                    time.sleep(10)
+                    time.sleep(3)
                     subprocess.run(["python", "uploader.py"])   
                     break              
     except KeyboardInterrupt:
