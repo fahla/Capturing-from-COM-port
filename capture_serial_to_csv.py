@@ -2,34 +2,27 @@ import serial
 import csv
 from datetime import datetime
 import os
+import time
+import params
+import testread2 as upload
+import subprocess
 
-# Serial port settings
-SERIAL_PORT = 'COM12'  # Adjust this to your serial port
-BAUD_RATE = 115200
 
-# CSV file settings
-CSV_FILE = r"C:\nrf_connect_sdk\myprojects\sensor_data.csv"  # Adjust path as necessary
-CSV_HEADER = ['Timestamp', 'eCO2 (ppm)', 'eTVOC (ppb)', 'CO2 (ppm)', 'Temperature (C)', 'Humidity',
-              'pm1.0','pm2.5','pm4.0','pm10.0','nc0.5','nc1.0','nc2.5','nc10.0','typical size']
+CSV_HEADER = ['Timestamp', 'eCO2', 'eTVOC', 'CO2', 'Temperature', 'Humidity',
+              'pm1.0', 'pm2.5', 'pm4.0', 'pm10.0', 'nc0.5', 'nc1.0', 'nc2.5', 'nc10.0', 'typical size']
 
-def read_from_serial(port, baud_rate):
-    """Reads data from the specified serial port."""
-    ser = serial.Serial(port, baud_rate)
-    ser.flushInput()
-    return ser
 
 def write_to_csv(file_name, data):
-    """Writes data to a CSV file."""
     try:
         with open(file_name, mode='a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(data)
-            print(f"Data written to CSV: {data}")  # Debugging print
+            print(f"Data written to CSV: {data}")
     except IOError as e:
         print(f"Error writing to CSV file: {e}")
 
-def main():
-    ser = read_from_serial(SERIAL_PORT, BAUD_RATE)
+def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
+    #ser = read_from_serial(SERIAL_PORT, BAUD_RATE)
     print(f"Listening on {SERIAL_PORT} at {BAUD_RATE} baud rate.")
     
     # Check if CSV file exists, create it if it doesn't
@@ -57,15 +50,16 @@ def main():
     nc2_5 = None
     nc10_0 = None
     typical_size = None
-   
-        
+    count = 0
+
+    #udp packet parsing logic
     try:
         while True:
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8').strip()
                 print(f"Received: {line}")
                 
-                # Parse the line and unpack values
+                # parsing logic 
                 if line.startswith('Received eCO2 value:'):
                     try:
                         eCO2 = int(line.split('Received eCO2 value: ')[1].split(' ppm')[0])
@@ -151,18 +145,22 @@ def main():
                         print("Error parsing humidity value")
                         continue
 
+                
                 # Check if all values are received
                 if all(v is not None for v in [eCO2, eTVOC, CO2, temperature, humidity,
                                                 pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]):
-                    # Get current timestamp
-                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     
+                     # Get current timestamp
+                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     # Write to CSV
                     data_row = [timestamp, eCO2, eTVOC, CO2, temperature, humidity, 
                                 pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]
                     write_to_csv(CSV_FILE, data_row)
+
+                    count+=1
                     
-                    # Reset variables
+
+                    # Initialize variables for sensor values
                     eCO2 = None
                     eTVOC = None
                     CO2 = None
@@ -171,17 +169,20 @@ def main():
                     pm1_0= None
                     pm2_5= None
                     pm4_0= None
-                    pm10_0 = None
-                    nc0_5= None
-                    nc1_0= None
+                    pm10_0= None
+                    nc0_5 = None
+                    nc1_0 = None
                     nc2_5 = None
-                    nc10_0= None
+                    nc10_0 = None
                     typical_size = None
-            
+
+                    
+                    time.sleep(3)
+                    if (count==15):
+                        count = 0
+                        subprocess.run(["python", "uploader.py"])   
+                                  
     except KeyboardInterrupt:
         print("Stopped by user")
     finally:
         ser.close()
-
-if __name__ == '__main__':
-    main()
