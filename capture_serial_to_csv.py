@@ -50,8 +50,9 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
     nc2_5 = None
     nc10_0 = None
     typical_size = None
+    count = 0
 
-    
+    #udp packet parsing logic
     try:
         while True:
             if ser.in_waiting > 0:
@@ -155,6 +156,8 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
                     data_row = [timestamp, eCO2, eTVOC, CO2, temperature, humidity, 
                                 pm1_0, pm2_5, pm4_0, pm10_0, nc0_5, nc1_0, nc2_5, nc10_0, typical_size]
                     write_to_csv(CSV_FILE, data_row)
+
+                    count+=1
                     
 
                     # Initialize variables for sensor values
@@ -175,7 +178,9 @@ def start_capture(SERIAL_PORT, BAUD_RATE, CSV_FILE, ser):
 
                     
                     time.sleep(3)
-                    subprocess.run(["python", "uploader.py"])   
+                    if (count==15):
+                        count = 0
+                        subprocess.run(["python", "uploader.py"])   
                                   
     except KeyboardInterrupt:
         print("Stopped by user")
