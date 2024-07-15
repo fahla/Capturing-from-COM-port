@@ -2,78 +2,99 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error
 
-# Load the data
-file_path = 'sensor_data_aqi.csv'
-data = pd.read_csv(file_path)
+def forecast_aqi(input_file, output_file):
+    # Load the data
+    data = pd.read_csv(input_file)
 
-# Convert Timestamp to datetime
-data['Timestamp'] = pd.to_datetime(data['Timestamp'])
+    # Convert date and hour to datetime
+    data['Timestamp'] = pd.to_datetime(data['date'] + ' ' + data['hour'].astype(str) + ':00:00')
 
-# Set the Timestamp as the index
-data.set_index('Timestamp', inplace=True)
+    # Set the Timestamp as the index
+    data.set_index('Timestamp', inplace=True)
 
-# Resample data to hourly average
-hourly_data = data['AQI'].resample('h').mean()
+    # Use 'overall_aqi_mean' as the AQI value
+    data['AQI'] = data['overall_aqi_mean']
 
-# Convert Series to DataFrame
-hourly_data = hourly_data.to_frame(name='AQI')
+    # Drop unnecessary columns
+    data = data[['AQI']]
 
-# Interpolate missing values to handle any gaps due to resampling
-hourly_data = hourly_data.interpolate()
+    # Resample data to hourly average (This step might not be necessary if the data is already hourly)
+    hourly_data = data['AQI'].resample('H').mean()
 
-# Create lag features for the last 24 hours to use for prediction
-for lag in range(1, 25):
-    hourly_data[f'lag_{lag}'] = hourly_data['AQI'].shift(lag)
+    # Convert Series to DataFrame
+    hourly_data = hourly_data.to_frame(name='AQI')
 
-# Drop the rows with NaN values resulting from lag feature creation
-hourly_data = hourly_data.dropna()
+    # Display initial data info
+    print("Initial data after resampling and before adding lag features:")
+    print(hourly_data.info())
+    print(hourly_data.head())
 
-# Split the data into features (X) and target (y)
-X = hourly_data.drop('AQI', axis=1)
-y = hourly_data['AQI']
+    # Create lag features for the last 24 hours to use for prediction
+    max_lag = 24  # Maximum number of lag features
+    for lag in range(1, max_lag + 1):
+        hourly_data[f'lag_{lag}'] = hourly_data['AQI'].shift(lag)
 
-# Split the data into training and testing sets (80% training, 20% testing)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Drop the rows with NaN values resulting from lag feature creation
+    hourly_data = hourly_data.dropna()
 
-# Create the Random Forest model
-model = RandomForestRegressor(n_estimators=100, random_state=42)
+    # Display data info after processing
+ #   print("Data after adding lag features and dropping NaN values:")
+  #  print(hourly_data.info())
+ #   print(hourly_data.head())
 
-# Train the model
-model.fit(X_train, y_train)
+    # Check if the processed data is sufficient
+    if hourly_data.shape[0] == 0:
+        raise ValueError("The processed dataset is empty after dropping NaN values. Please check the data and preprocessing steps.")
 
-# Predict on the test set
-y_pred = model.predict(X_test)
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
+    # Split the data into features (X) and target (y)
+    X = hourly_data.drop('AQI', axis=1)
+    y = hourly_data['AQI']
 
-print(f"Test Set Mean Squared Error: {mse}")
-print(f"Test Set R-squared: {r2}")
+    # Split the data into training and testing sets (80% training, 20% testing)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=59)
 
-# Forecast the next 24 hours
-last_row = hourly_data[-1:].drop('AQI', axis=1)
-forecast = []
-for i in range(24):
-    pred = model.predict(last_row)
-    forecast.append(pred[0])
-    new_row = pd.Series([pred[0]] + list(last_row.iloc[0, :-1]), index=last_row.columns)
-    last_row = pd.DataFrame([new_row])
+    # Check if the train and test sets are not empty
+    if X_train.shape[0] == 0 or X_test.shape[0] == 0:
+        raise ValueError("The train or test set is empty. Adjust the test_size parameter or check the data.")
 
-# Create a DataFrame for the predictions
-forecast_df = pd.DataFrame({'hour': range(24), 'predicted_AQI': np.round(forecast, 2)})
+    # Create the Random Forest model
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
 
-# Print the lowest and highest AQI from the source data
-lowest_aqi = data['AQI'].min()
-lowest_aqi_time = data['AQI'].idxmin()
-highest_aqi = data['AQI'].max()
-highest_aqi_time = data['AQI'].idxmax()
+    # Train the model
+    model.fit(X_train, y_train)
 
-print(f"Lowest AQI: {lowest_aqi} at {lowest_aqi_time}")
-print(f"Highest AQI: {highest_aqi} at {highest_aqi_time}")
+    # Predict on the test set
+    y_pred = model.predict(X_test)
+  #  print(f"Test Set Mean Squared Error: {mean_squared_error(y_test, y_pred)}")
 
-# Print the forecasted AQI values
-print(forecast_df.to_string(index=False))
+    # Forecast the next 24 hours
+    last_row = hourly_data[-1:].drop('AQI', axis=1)
+    forecast = []
+    for i in range(24):
+        pred = model.predict(last_row)
+        forecast.append(pred[0])
+        new_row = pd.Series([pred[0]] + list(last_row.iloc[0, :-1]), index=last_row.columns)
+        last_row = pd.DataFrame([new_row])
 
-# Save the forecast to a CSV file
-forecast_df.to_csv('forecasted_aqi.csv', index=False)
+    # Create a DataFrame for the predictions
+    forecast_df = pd.DataFrame({'hour': range(24), 'predicted_AQI': np.round(forecast)})
+
+    # Print the lowest and highest AQI from the source data
+    lowest_aqi = data['AQI'].min()
+    lowest_aqi_time = data['AQI'].idxmin()
+    highest_aqi = data['AQI'].max()
+    highest_aqi_time = data['AQI'].idxmax()
+
+   # print(f"Lowest AQI: {lowest_aqi} at {lowest_aqi_time}")
+   # print(f"Highest AQI: {highest_aqi} at {highest_aqi_time}")
+
+    # Print the forecasted AQI values
+  #  print(forecast_df.to_string(index=False))
+
+    # Save the forecast to a CSV file
+    forecast_df.to_csv(output_file, index=False)
+
+# Example usage
+# forecast_aqi('input_file.csv', 'output_file.csv')

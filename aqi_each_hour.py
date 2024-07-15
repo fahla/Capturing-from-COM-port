@@ -154,7 +154,7 @@ def aggregate_aqi_by_hour(interval_data):
 # In[11]:
 
 
-def aqi_each_hour_main(csv_file, output_csv_file):
+def aqi_each_hour_main(csv_file, output_csv_file, output_csv_file_24h):
     data = read_sensor_data(csv_file)
     data = calculate_aqi(data)
     interval_data = interval_analysis(data)
@@ -163,16 +163,47 @@ def aqi_each_hour_main(csv_file, output_csv_file):
     # Save the hourly AQI analysis results to a CSV file
     hourly_aqi.to_csv(output_csv_file, index=False)
 
-    print("Hourly AQI analysis completed. Results saved to", output_csv_file)
+    # Read the hourly AQI data from the output file
+    hourly_aqi = pd.read_csv(output_csv_file, parse_dates=[['date', 'hour']])
 
+    # Combine 'date' and 'hour' columns to form 'Timestamp'
+    hourly_aqi['Timestamp'] = pd.to_datetime(hourly_aqi['date_hour'])
+
+    # Extract the latest 24 hours of data
+    latest_24h_start = hourly_aqi['Timestamp'].max() - pd.Timedelta(hours=23)
+    latest_24h = hourly_aqi[hourly_aqi['Timestamp'] >= latest_24h_start]
+
+    # Interpolate to fill any missing values
+    latest_24h.set_index('Timestamp', inplace=True)
+    latest_24h = latest_24h.resample('H').mean().interpolate()
+
+    # Round values to 2 decimal places
+    latest_24h['AQI_PM2.5_24h'] = latest_24h['overall_aqi_mean'].round(2)
+    latest_24h['AQI_PM10_24h'] = latest_24h['overall_aqi_mean'].round(2)
+
+    # Reset index to get 'Timestamp' back as a column
+    latest_24h.reset_index(inplace=True)
+
+    # Select and rename columns
+    latest_24h = latest_24h[['Timestamp', 'AQI_PM2.5_24h', 'AQI_PM10_24h']]
+
+    # Save the latest 24 hours of AQI data to a separate CSV file
+    latest_24h.to_csv(output_csv_file_24h, index=False)
+
+# Example usage:
+# aqi_each_hour_main("sensor_data.csv", "AQIAllHours.csv", "AQILast24Hours.csv")
+
+
+    
+# print("Hourly AQI analysis completed. Results saved to", output_csv_file)
+# csv_file = 'sensor_data.csv'  # Replace with your actual file path
+# aqi_each_hour_main(csv_file, "output_csv_file_all")
 
 # In[12]:
 
 
 # Example usage
-#csv_file = '/Users/hallo/Desktop/SSNS/project_data/sensor_data.csv'  # Replace with your actual file path
-#output_csv_file = '/Users/hallo/Desktop/SSNS/project_data/try2.csv'  # Replace with your desired output file path
-#aqi_each_hour_main(csv_file, output_csv_file)
+
 
 
 # In[ ]:
