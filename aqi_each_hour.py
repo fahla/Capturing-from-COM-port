@@ -111,6 +111,23 @@ def interval_analysis(data, interval='5min'):
         'pm2.5_aqi_upper': ['min', 'max', 'mean'],
         'pm10.0_aqi_lower': ['min', 'max', 'mean'],
         'pm10.0_aqi_upper': ['min', 'max', 'mean'],
+        'pm2.5_aqi': 'mean',
+        'pm10.0_aqi': 'mean',
+        'overall_aqi_lower': ['min', 'max', 'mean'],
+        'overall_aqi_upper': ['min', 'max', 'mean'],
+        'overall_aqi': ['min', 'max', 'mean']
+    })
+    interval_data.columns = ['_'.join(col).strip() for col in interval_data.columns.values]
+    interval_data.reset_index(inplace=True)
+    return interval_data
+    data.set_index('Timestamp', inplace=True)
+    interval_data = data.resample(interval).agg({
+        'pm2.5': ['min', 'max', 'mean'],
+        'pm10.0': ['min', 'max', 'mean'],
+        'pm2.5_aqi_lower': ['min', 'max', 'mean'],
+        'pm2.5_aqi_upper': ['min', 'max', 'mean'],
+        'pm10.0_aqi_lower': ['min', 'max', 'mean'],
+        'pm10.0_aqi_upper': ['min', 'max', 'mean'],
         'overall_aqi_lower': ['min', 'max', 'mean'],
         'overall_aqi_upper': ['min', 'max', 'mean'],
         'overall_aqi': ['min', 'max', 'mean']
@@ -126,29 +143,35 @@ def interval_analysis(data, interval='5min'):
 def aggregate_aqi_by_hour(interval_data):
     interval_data['date_hour'] = interval_data['Timestamp'].dt.floor('h')
     hourly_aqi = interval_data.groupby('date_hour').agg({
+        'pm2.5_aqi_mean': 'mean',
+        'pm10.0_aqi_mean': 'mean',
         'overall_aqi_mean': 'mean',
         'overall_aqi_lower_mean': 'mean',
         'overall_aqi_upper_mean': 'mean'
     }).reset_index()
 
     # Ensure there are no missing hourly values by reindexing and interpolating
-    all_hours = pd.date_range(start=hourly_aqi['date_hour'].min(), 
-                              end=hourly_aqi['date_hour'].max(), 
-                              freq='h')
+    all_hours = pd.date_range(start=hourly_aqi['date_hour'].min(), end=hourly_aqi['date_hour'].max(), freq='h')
     hourly_aqi = hourly_aqi.set_index('date_hour').reindex(all_hours).reset_index()
-    hourly_aqi.columns = ['date_hour', 'overall_aqi_mean', 'overall_aqi_lower_mean', 'overall_aqi_upper_mean']
+    hourly_aqi.columns = ['date_hour', 'pm2.5_aqi_mean', 'pm10.0_aqi_mean', 'overall_aqi_mean', 'overall_aqi_lower_mean', 'overall_aqi_upper_mean']
+    hourly_aqi['pm2.5_aqi_mean'] = hourly_aqi['pm2.5_aqi_mean'].interpolate()
+    hourly_aqi['pm10.0_aqi_mean'] = hourly_aqi['pm10.0_aqi_mean'].interpolate()
     hourly_aqi['overall_aqi_mean'] = hourly_aqi['overall_aqi_mean'].interpolate()
     hourly_aqi['overall_aqi_lower_mean'] = hourly_aqi['overall_aqi_lower_mean'].interpolate()
     hourly_aqi['overall_aqi_upper_mean'] = hourly_aqi['overall_aqi_upper_mean'].interpolate()
 
     hourly_aqi['date'] = hourly_aqi['date_hour'].dt.date
     hourly_aqi['hour'] = hourly_aqi['date_hour'].dt.hour
-    hourly_aqi = hourly_aqi[['date', 'hour', 'overall_aqi_mean', 'overall_aqi_lower_mean', 'overall_aqi_upper_mean']]
-    # Round the overall AQI to the nearest integer
+    hourly_aqi = hourly_aqi[['date', 'hour', 'pm2.5_aqi_mean', 'pm10.0_aqi_mean', 'overall_aqi_mean', 'overall_aqi_lower_mean', 'overall_aqi_upper_mean']]
+    # Round the AQI values to the nearest integer
+    hourly_aqi['pm2.5_aqi_mean'] = hourly_aqi['pm2.5_aqi_mean'].round().astype(int)
+    hourly_aqi['pm10.0_aqi_mean'] = hourly_aqi['pm10.0_aqi_mean'].round().astype(int)
     hourly_aqi['overall_aqi_mean'] = hourly_aqi['overall_aqi_mean'].round().astype(int)
     hourly_aqi['overall_aqi_lower_mean'] = hourly_aqi['overall_aqi_lower_mean'].round().astype(int)
     hourly_aqi['overall_aqi_upper_mean'] = hourly_aqi['overall_aqi_upper_mean'].round().astype(int)
     return hourly_aqi
+
+
 
 
 # In[11]:
@@ -178,17 +201,20 @@ def aqi_each_hour_main(csv_file, output_csv_file, output_csv_file_24h):
     latest_24h = latest_24h.resample('H').mean().interpolate()
 
     # Round values to 2 decimal places
-    latest_24h['AQI_PM2.5_24h'] = latest_24h['overall_aqi_mean'].round(2)
-    latest_24h['AQI_PM10_24h'] = latest_24h['overall_aqi_mean'].round(2)
+    latest_24h['AQI_PM2.5_24h'] = latest_24h['pm2.5_aqi_mean'].round(2)
+    latest_24h['AQI_PM10_24h'] = latest_24h['pm10.0_aqi_mean'].round(2)
+    latest_24h['AQI_Overall_24h'] = latest_24h['overall_aqi_mean'].round(2)
 
     # Reset index to get 'Timestamp' back as a column
     latest_24h.reset_index(inplace=True)
 
     # Select and rename columns
-    latest_24h = latest_24h[['Timestamp', 'AQI_PM2.5_24h', 'AQI_PM10_24h']]
+    latest_24h = latest_24h[['Timestamp', 'AQI_PM2.5_24h', 'AQI_PM10_24h', 'AQI_Overall_24h']]
 
     # Save the latest 24 hours of AQI data to a separate CSV file
     latest_24h.to_csv(output_csv_file_24h, index=False)
+
+
 
 # Example usage:
 # aqi_each_hour_main("sensor_data.csv", "AQIAllHours.csv", "AQILast24Hours.csv")

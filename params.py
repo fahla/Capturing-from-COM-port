@@ -10,7 +10,7 @@ END_DATE = '2024-07-05'
 END_HOUR = '23:59'
 PEAK_HOUR_FILE = 'peak_hour_data.csv'
 PRED_FILE = 'pred_file3.csv'
-AQI_DATA_LAST24_HOURS = 'aqi_data_24h_new.csv'
+AQI_DATA_LAST24_HOURS = 'aqi_data_24hrs.csv'
 AQI_DATA_ALL = 'AQIAllHours.csv'
 
 # FTP details
