@@ -72,7 +72,7 @@ def main():
     while True:
         try:
             #Capture the data 
-            capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
+            #  capture_data(params.SERIAL_PORT, params.BAUD_RATE, params.CSV_FILE)
             
             #Upload the sensor data CSV file
             upload_data(params.CSV_FILE, **params.FTP_DETAILS)
@@ -92,7 +92,7 @@ def main():
             upload_data(params.AQI_DATA_LAST24_HOURS, **params.FTP_DETAILS)
 
             
-            time.sleep(120)  # Wait for 120 secs before next upload
+            time.sleep(10)  # Wait for 120 secs before next upload
             if(initIteration):
                 generate_prediction_data_rf(params.AQI_DATA_ALL,params.PRED_FILE)
                 upload_data(params.PRED_FILE, **params.FTP_DETAILS)

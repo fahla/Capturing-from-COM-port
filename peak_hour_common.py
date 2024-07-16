@@ -1,5 +1,8 @@
 import pandas as pd
 
+def linear_interpolation(value, c_low, c_high, aqi_low, aqi_high):
+    return ((aqi_high - aqi_low) / (c_high - c_low)) * (value - c_low) + aqi_low
+
 def calculate_aqi_pm25(pm25):
     if pm25 <= 12.0:
         return linear_interpolation(pm25, 0.0, 12.0, 0, 50)
@@ -35,9 +38,6 @@ def calculate_aqi_pm10(pm10):
         return linear_interpolation(pm10, 505, 604, 401, 500)
     else:
         return 500  # AQI value for concentrations above 604
-
-def linear_interpolation(value, c_low, c_high, aqi_low, aqi_high):
-    return ((aqi_high - aqi_low) / (c_high - c_low)) * (value - c_low) + aqi_low
 
 def read_sensor_data(csv_file):
     data = pd.read_csv(csv_file, parse_dates=['Timestamp'])
@@ -110,7 +110,7 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
 
         # Drop duplicate 'Timestamp' column if exists
         if 'Timestamp' in peak_hour_data.columns:
-            peak_hour_data = peak_hour_data.loc[:,~peak_hour_data.columns.duplicated()]
+            peak_hour_data = peak_hour_data.loc[:, ~peak_hour_data.columns.duplicated()]
 
         # Interpolate missing hours
         peak_hour_data = interpolate_missing_hours(peak_hour_data)
@@ -123,7 +123,7 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
 # Example usage (if needed for standalone testing)
 if __name__ == "__main__":
     input_file = 'sensor_data.csv'  # Update this path as needed
-    output_file = 'peak_hour_data.csv'  # Update this path as needed
+    output_file = 'peak_hour_data_new.csv'  # Update this path as needed
     start_date = '2024-07-01'
     start_hour = '00:00'
     end_date = '2024-07-02'
