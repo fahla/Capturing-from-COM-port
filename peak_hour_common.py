@@ -92,6 +92,7 @@ def interpolate_missing_hours(df):
 
     return df
 
+
 def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour):
     """Perform peak hour analysis."""
     try:
@@ -102,8 +103,11 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
         end_datetime = pd.to_datetime(f"{end_date} {end_hour}")
         data = data[(data['Timestamp'] >= start_datetime) & (data['Timestamp'] <= end_datetime)]
 
+
         # Calculate AQI for the filtered data
         data = calculate_aqi(data)
+
+
 
         # Perform peak hour analysis
         peak_hour_data = peak_hour_analysis(data)
@@ -111,9 +115,13 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
         # Drop duplicate 'Timestamp' column if exists
         if 'Timestamp' in peak_hour_data.columns:
             peak_hour_data = peak_hour_data.loc[:, ~peak_hour_data.columns.duplicated()]
-
-        # Interpolate missing hours
+        peak_hour_data = peak_hour_data.tail(24)
         peak_hour_data = interpolate_missing_hours(peak_hour_data)
+        peak_hour_data = peak_hour_data.tail(24)
+        peak_hour_data = peak_hour_analysis(peak_hour_data)
+        if 'Timestamp' in peak_hour_data.columns:
+                peak_hour_data = peak_hour_data.loc[:, ~peak_hour_data.columns.duplicated()]
+        # Interpolate missing hours
 
         # Save the peak hour analysis results to a CSV file
         peak_hour_data.to_csv(output_file, index=False)
@@ -123,9 +131,9 @@ def analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date
 # Example usage (if needed for standalone testing)
 if __name__ == "__main__":
     input_file = 'sensor_data.csv'  # Update this path as needed
-    output_file = 'peak_hour_data_new.csv'  # Update this path as needed
+    output_file = 'peak_hour_data_new_test.csv'  # Update this path as needed
     start_date = '2024-07-01'
     start_hour = '00:00'
-    end_date = '2024-07-02'
+    end_date = '2024-07-15'
     end_hour = '23:59'
     analyze_peak_hours(input_file, output_file, start_date, start_hour, end_date, end_hour)
