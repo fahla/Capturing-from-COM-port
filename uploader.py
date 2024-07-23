@@ -1,6 +1,7 @@
 import ftplib
 import logging
 import time
+import master_script as ms
 
 def upload_file_to_ftp(filename, server, username, password, directory=None):
     """
@@ -44,4 +45,5 @@ if __name__ == "__main__":
 
 
     upload_file_to_ftp(csv_filename, ftp_server, ftp_username, ftp_password, ftp_directory)
+    ms.upload_files_fixed()
     
