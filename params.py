@@ -6,7 +6,7 @@ CSV_FILE = r'sensor_data.csv'
 # Parameters for peak hour analysis
 START_DATE = '2024-07-05'
 START_HOUR = '00:00'
-END_DATE = '2024-07-15'
+END_DATE = '2024-07-25'
 END_HOUR = '23:59'
 PEAK_HOUR_FILE = 'peak_hour_data_new.csv'
 PRED_FILE = 'pred_file_latest.csv'
