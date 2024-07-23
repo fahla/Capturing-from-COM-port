@@ -53,7 +53,7 @@ def forecast_aqi(input_file, output_file):
     y = hourly_data['AQI']
 
     # Split the data into training and testing sets (80% training, 20% testing)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=59)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=59)
 
     # Check if the train and test sets are not empty
     if X_train.shape[0] == 0 or X_test.shape[0] == 0:
