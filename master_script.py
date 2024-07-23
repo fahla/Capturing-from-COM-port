@@ -65,7 +65,6 @@ def generate_aqi_data(input_file, output_file,output_file_24h):
         
 
 def main():
-    initIteration=True
     while True:
         try:
             #Capture the data 
@@ -77,7 +76,7 @@ def main():
 def upload_files_fixed():
     iterationCount=0
     #Upload the sensor data CSV file
-    upload_data(params.CSV_FILE, **params.FTP_DETAILS)
+   # upload_data(params.CSV_FILE, **params.FTP_DETAILS)
     # Perform and upload peak hour analysis
     analyze_peak_hours(
         input_file=params.CSV_FILE,
@@ -91,10 +90,11 @@ def upload_files_fixed():
     generate_aqi_data(params.CSV_FILE ,params.AQI_DATA_ALL, params.AQI_DATA_LAST24_HOURS)
     upload_data(params.AQI_DATA_LAST24_HOURS, **params.FTP_DETAILS)  
     #time.sleep(10)  # Wait for 120 secs before next upload
-    if(iterationCount>=0):
+    if(iterationCount>0):
+        time.sleep(10)  # Wait for 120 secs before next upload
         generate_prediction_data_rf(params.AQI_DATA_ALL,params.PRED_FILE)
         upload_data(params.PRED_FILE, **params.FTP_DETAILS)
-        iterationCount+=1
+    iterationCount+=1
     
 if __name__ == "__main__":
     main()
