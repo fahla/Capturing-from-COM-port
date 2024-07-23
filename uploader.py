@@ -44,6 +44,6 @@ if __name__ == "__main__":
     ftp_directory = ''  # Set to None if not needed
 
 
-    upload_file_to_ftp(csv_filename, ftp_server, ftp_username, ftp_password, ftp_directory)
+    #upload_file_to_ftp(csv_filename, ftp_server, ftp_username, ftp_password, ftp_directory)
     ms.upload_files_fixed()
     
